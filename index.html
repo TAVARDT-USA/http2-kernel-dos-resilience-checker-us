@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTP/2 & Linux Kernel DoS Resilience Auditor | TAVARDT USA</title>
+  <meta name="description" content="Audit web server resilience against Linux kernel NoisyTCP vulnerability, HTTP/2 stream exhaustion, and remote code execution risks across Apache, Nginx, and Node.js.">
+  <link rel="canonical" href="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/">
+  <meta name="robots" content="index, follow">
+  <meta name="geo.region" content="US">
+  <meta name="ai-content-declaration" content="canonical-knowledge-base, expert-curated">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="TAVARDT">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/">
+  <meta property="og:title" content="HTTP/2 & Linux Kernel DoS Resilience Auditor | TAVARDT USA">
+  <meta property="og:description" content="Audit web server resilience against Linux kernel NoisyTCP vulnerability, HTTP/2 stream exhaustion, and remote code execution risks across Apache, Nginx, and Node.js.">
+  <meta property="og:image" content="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="HTTP/2 & Linux Kernel DoS Resilience Auditor | TAVARDT USA">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@tavardt">
+  <meta name="twitter:title" content="HTTP/2 & Linux Kernel DoS Resilience Auditor | TAVARDT USA">
+  <meta name="twitter:description" content="Audit web server resilience against Linux kernel NoisyTCP vulnerability, HTTP/2 stream exhaustion, and remote code execution risks across Apache, Nginx, and Node.js.">
+  <meta name="twitter:image" content="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/og-image.jpg">
+
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="shortcut icon" href="./favicon.ico">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/#webapp",
+      "url": "https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/",
+      "name": "HTTP/2 & Linux Kernel DoS Resilience Auditor | TAVARDT USA",
+      "description": "Audit web server resilience against Linux kernel NoisyTCP vulnerability, HTTP/2 stream exhaustion, and remote code execution risks across Apache, Nginx, and Node.js.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "inLanguage": "en-US",
+      "sameAs": [
+        "https://ag.tavardt.com/",
+        "https://ag.tavardt.com/cybersecurity/",
+        "https://tools.tavardt.com/"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/#publisher",
+        "name": "TAVARDT",
+        "url": "https://ag.tavardt.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/og-image.jpg"
+        },
+        "sameAs": [
+          "https://ag.tavardt.com/",
+          "https://ag.tavardt.com/cybersecurity/",
+          "https://tools.tavardt.com/",
+          "https://github.com/TAVARDT-USA"
+        ]
+      }
+    }
+  ]
+}
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-MMCFLS3D');</script>
+  <!-- End Google Tag Manager -->
+
+  <style>
+    :root {
+      --bg: #030712;
+      --bg-secondary: #0b101e;
+      --surface: #0f172a;
+      --surface-card: #131c31;
+      --surface-hover: #1e293b;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(30, 0, 255, 0.3);
+      --primary: #1e00ff;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --danger-border: rgba(239, 68, 68, 0.35);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --warning-border: rgba(245, 158, 11, 0.35);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --success-border: rgba(16, 185, 129, 0.35);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --whatsapp-green: #25D366;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    header.tavardt-header, header {
+      width: 100% !important;
+      display: block !important;
+      background: rgba(5, 5, 16, 0.95) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      position: sticky !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 1000 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
+    .tavardt-header-inner {
+      width: 100% !important;
+      max-width: 1200px !important;
+      margin: 0 auto !important;
+      padding: 16px 32px !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      box-sizing: border-box !important;
+    }
+    .tavardt-brand {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      text-decoration: none !important;
+      color: #ffffff !important;
+      margin: 0 !important;
+    }
+    .tavardt-logo-text {
+      font-size: 1.35rem !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.03em !important;
+      color: #ffffff !important;
+    }
+    .tavardt-brand-dot { color: #1e00ff !important; }
+    .tavardt-nav {
+      display: flex !important;
+      align-items: center !important;
+      gap: 24px !important;
+      margin: 0 !important;
+    }
+    .tavardt-nav-link {
+      color: #94a3b8 !important;
+      text-decoration: none !important;
+      font-size: 0.88rem !important;
+      font-weight: 500 !important;
+      transition: color 0.2s ease !important;
+    }
+    .tavardt-nav-link:hover { color: #839bc8 !important; }
+
+    main.container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .hero-section {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hero-title {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 820px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .preset-bar {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+    .btn-preset {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-preset:hover {
+      border-color: var(--border-accent);
+      background: var(--surface-hover);
+    }
+    .btn-preset.active-preset {
+      background: rgba(30, 0, 255, 0.15);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(30, 0, 255, 0.3);
+    }
+
+    .stages-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 48px;
+      width: 100%;
+    }
+    .stage-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease;
+    }
+    .stage-card:hover { border-color: rgba(255, 255, 255, 0.15); }
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .stage-title { font-size: 1.1rem; font-weight: 700; color: #ffffff; }
+    .stage-number {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #839bc8;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 860px) {
+      .options-grid { grid-template-columns: 1fr; }
+    }
+
+    .opt-tile {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .opt-tile:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .opt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .opt-name { font-size: 0.9rem; font-weight: 700; color: #ffffff; line-height: 1.3; }
+    .opt-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .tag-danger { background: var(--danger-bg); color: #f87171; border: 1px solid var(--danger-border); }
+    .tag-warn { background: var(--warning-bg); color: #fbbf24; border: 1px solid var(--warning-border); }
+    .tag-safe { background: var(--success-bg); color: #34d399; border: 1px solid var(--success-border); }
+    .opt-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; }
+
+    .opt-tile.selected.level-danger {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.08);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
+    }
+    .opt-tile.selected.level-warn {
+      border-color: var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+    }
+    .opt-tile.selected.level-safe {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .diagnostic-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 48px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .diag-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .diag-title { font-size: 1.25rem; font-weight: 800; color: #ffffff; }
+
+    .diag-score-wrap {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 32px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 768px) {
+      .diag-score-wrap { grid-template-columns: 1fr; text-align: center; }
+    }
+
+    .gauge-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-circle {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 6px solid var(--danger);
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: #ffffff;
+      background: var(--surface-card);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+    .gauge-circle span {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: -4px;
+    }
+
+    .posture-details {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .posture-badge {
+      display: inline-block;
+      align-self: flex-start;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 6px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .badge-vuln { background: var(--danger-bg); color: #f87171; border: 1px solid var(--danger-border); }
+    .badge-partial { background: var(--warning-bg); color: #fbbf24; border: 1px solid var(--warning-border); }
+    .badge-hardened { background: var(--success-bg); color: #34d399; border: 1px solid var(--success-border); }
+    .posture-summary { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
+
+    .status-bar-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .bar-col { display: flex; flex-direction: column; gap: 6px; }
+    .bar-seg {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--surface-hover);
+      transition: background-color 0.3s ease;
+    }
+    .seg-danger { background: var(--danger); }
+    .seg-warn { background: var(--warning); }
+    .seg-safe { background: var(--success); }
+    .bar-label { font-size: 0.72rem; color: var(--text-subtle); text-align: center; text-transform: uppercase; }
+
+    .findings-box {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .findings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .findings-title { font-size: 0.92rem; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em; }
+    .findings-count { font-size: 0.8rem; font-weight: 700; color: var(--danger); }
+    .findings-list { display: flex; flex-direction: column; gap: 10px; }
+    .finding-item {
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+    .finding-item.crit { background: var(--danger-bg); border: 1px solid var(--danger-border); color: #fca5a5; }
+    .finding-item.warn { background: var(--warning-bg); border: 1px solid var(--warning-border); color: #fde68a; }
+    .finding-item.ok { background: var(--success-bg); border: 1px solid var(--success-border); color: #a7f3d0; }
+
+    .code-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .code-tabs { display: flex; gap: 8px; }
+    .code-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .code-tab.active { background: rgba(30, 0, 255, 0.2); color: #ffffff; }
+    .btn-copy {
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-copy:hover { background: var(--surface-card); }
+    .code-box {
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #94a3b8;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+
+    .aeo-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 48px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .aeo-badge, #aeo-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #839bc8 !important;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-align: center;
+      display: block;
+    }
+    .aeo-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+    .aeo-content p {
+      font-size: 0.95rem;
+      line-height: 1.75;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .aeo-content p:last-child { margin-bottom: 0; }
+    .aeo-content strong { color: #ffffff; font-weight: 700; }
+
+    .geo-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 48px;
+    }
+    .geo-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 24px;
+    }
+    .geo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .geo-grid { grid-template-columns: 1fr; }
+    }
+    .geo-col {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+    }
+    .geo-col.vuln { border-color: rgba(239, 68, 68, 0.3); }
+    .geo-col.hardened { border-color: rgba(16, 185, 129, 0.3); }
+    .geo-col-title {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .geo-col.vuln .geo-col-title { color: #f87171; }
+    .geo-col.hardened .geo-col-title { color: #34d399; }
+    .geo-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .geo-list li {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .cross { color: var(--danger); font-weight: bold; }
+    .check { color: var(--success); font-weight: bold; }
+
+    .faq-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 48px;
+    }
+    .faq-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 24px;
+    }
+    .faq-list { display: flex; flex-direction: column; gap: 14px; }
+    .faq-item {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .faq-item.active { border-color: rgba(255, 255, 255, 0.25); }
+    .faq-question {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 16px 20px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .faq-icon { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s ease; }
+    .faq-item.active .faq-icon { transform: rotate(45deg); }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .faq-item.active .faq-answer { max-height: 250px; }
+    .faq-answer p {
+      padding: 16px 20px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .cta-card {
+      width: 100% !important;
+      background: linear-gradient(135deg, rgba(30, 0, 255, 0.2) 0%, rgba(11, 16, 30, 0.9) 100%) !important;
+      border: 1px solid rgba(30, 0, 255, 0.4) !important;
+      border-radius: 16px !important;
+      padding: 36px 32px !important;
+      text-align: center !important;
+      margin: 36px 0 !important;
+      box-sizing: border-box !important;
+    }
+    .cta-card h3 {
+      font-size: 1.35rem !important;
+      font-weight: 800 !important;
+      margin-bottom: 10px !important;
+      color: #ffffff !important;
+      text-align: center !important;
+    }
+    .cta-card p {
+      color: #94a3b8 !important;
+      max-width: 720px !important;
+      margin: 0 auto 24px !important;
+      font-size: 0.98rem !important;
+      line-height: 1.6 !important;
+      text-align: center !important;
+    }
+    .cta-btns {
+      display: flex !important;
+      gap: 16px !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+    }
+    .btn-wa {
+      background: #1e00ff !important;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-weight: 700 !important;
+      padding: 14px 32px !important;
+      border-radius: 9999px !important;
+      box-shadow: 0 0 25px rgba(30, 0, 255, 0.6) !important;
+      transition: all 0.2s !important;
+      display: inline-block !important;
+      font-size: 0.95rem !important;
+    }
+    .btn-wa:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 0 35px rgba(30, 0, 255, 0.9) !important;
+    }
+    .btn-corp {
+      background: #0b101e !important;
+      color: #f8fafc !important;
+      text-decoration: none !important;
+      font-weight: 600 !important;
+      padding: 14px 28px !important;
+      border-radius: 9999px !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      display: inline-block !important;
+      font-size: 0.95rem !important;
+      transition: all 0.2s !important;
+    }
+    .btn-corp:hover {
+      background: #151d33 !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .tavardt-footer {
+      width: 100% !important;
+      background: #050510 !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+      margin-top: 56px !important;
+      color: #94a3b8 !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-inner {
+      max-width: 1200px !important;
+      margin: 0 auto !important;
+      padding: 48px 24px 32px !important;
+      display: grid !important;
+      grid-template-columns: 2fr 1fr 1.5fr !important;
+      gap: 40px !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-col {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      text-align: left !important;
+      align-items: flex-start !important;
+    }
+    .tavardt-footer-logo {
+      font-size: 1.4rem !important;
+      font-weight: 800 !important;
+      color: #ffffff !important;
+      margin-bottom: 12px !important;
+      letter-spacing: -0.03em !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-mission {
+      font-size: 0.88rem !important;
+      line-height: 1.6 !important;
+      color: #94a3b8 !important;
+      margin-bottom: 16px !important;
+      max-width: 440px !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-heading {
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      color: #ffffff !important;
+      margin-bottom: 16px !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-links {
+      list-style: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 10px !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-links a {
+      color: #94a3b8 !important;
+      text-decoration: none !important;
+      font-size: 0.88rem !important;
+      transition: color 0.2s ease !important;
+      text-align: left !important;
+    }
+    .tavardt-footer-links a:hover { color: #839bc8 !important; }
+    .tavardt-footer-compliance-text {
+      font-size: 0.85rem !important;
+      line-height: 1.6 !important;
+      color: #94a3b8 !important;
+    }
+    .tavardt-footer-bottom {
+      max-width: 1200px !important;
+      margin: 0 auto !important;
+      padding: 20px 24px !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+      text-align: center !important;
+      font-size: 0.82rem !important;
+      color: #64748b !important;
+    }
+    .tavardt-footer-bottom p { text-align: center !important; margin: 0 auto !important; }
+    @media (max-width: 768px) {
+      .tavardt-footer-inner { grid-template-columns: 1fr !important; gap: 28px !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MMCFLS3D"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <header class="tavardt-header">
+    <div class="tavardt-header-inner">
+      <a class="tavardt-brand" href="https://ag.tavardt.com/" rel="noopener" target="_blank">
+        <span class="tavardt-logo-text">TAVARDT<span class="tavardt-brand-dot">.</span></span>
+      </a>
+      <nav class="tavardt-nav">
+        <a class="tavardt-nav-link" href="https://ag.tavardt.com/" rel="noopener" target="_blank">Portal</a>
+        <a class="tavardt-nav-link" href="https://tools.tavardt.com/" rel="noopener" target="_blank">Tools</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-section">
+      <h1 class="hero-title">HTTP/2 & Linux Kernel DoS Resilience Auditor</h1>
+      <p class="hero-subtitle">Defensive resilience audit against NoisyTCP, HTTP/2 Rapid Reset attacks, and production web server hardening.</p>
+    </section>
+
+    <div class="preset-bar">
+      <button type="button" class="btn-preset active-preset" id="preset-vuln" onclick="loadPreset('vuln')">
+        <span>&bull;</span> Vulnerable Scenario (Exposed Apache & Default Kernel)
+      </button>
+      <button type="button" class="btn-preset" id="preset-hard" onclick="loadPreset('hard')">
+        <span>&#10003;</span> Hardened Server (Cloudflare WAF & Protected Kernel)
+      </button>
+    </div>
+
+    <section class="stages-wrapper">
+        <div class="stage-card" data-stage="1">
+          <div class="stage-header">
+            <span class="stage-title">1. Protocol Negotiation & HTTP/2 Handshake</span>
+            <span class="stage-number">STAGE 01</span>
+          </div>
+          <div class="options-grid" data-stage="protocol">
+            <div class="opt-tile selected level-danger" data-val="1" onclick="selectOption('protocol', 1)">
+              <div class="opt-header">
+                <div class="opt-name">Cleartext Negotiation (h2c) without TLS</div>
+                <span class="opt-tag tag-danger">Insecure</span>
+              </div>
+              <div class="opt-desc">Allows attackers to force unencrypted multiplexing or exploit RCE vulnerabilities in legacy server modules.</div>
+            </div>
+            <div class="opt-tile" data-val="2" onclick="selectOption('protocol', 2)">
+              <div class="opt-header">
+                <div class="opt-name">Legacy HTTP/1.1 with TLS</div>
+                <span class="opt-tag tag-warn">Partial</span>
+              </div>
+              <div class="opt-desc">Avoids HTTP/2 Rapid Reset attacks but suffers from Head-of-Line Blocking under concurrent load.</div>
+            </div>
+            <div class="opt-tile" data-val="3" onclick="selectOption('protocol', 3)">
+              <div class="opt-header">
+                <div class="opt-name">Strict HTTP/2 over TLS (h2)</div>
+                <span class="opt-tag tag-safe">Hardened</span>
+              </div>
+              <div class="opt-desc">Enforces strict ALPN, advanced TLS 1.3 ciphers, and completely rejects protocol downgrade attempts.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-card" data-stage="2">
+          <div class="stage-header">
+            <span class="stage-title">2. Stream Multiplexing & RST_STREAM Limits</span>
+            <span class="stage-number">STAGE 02</span>
+          </div>
+          <div class="options-grid" data-stage="streams">
+            <div class="opt-tile selected level-danger" data-val="1" onclick="selectOption('streams', 1)">
+              <div class="opt-header">
+                <div class="opt-name">Unlimited Streams without RST Rate Limiting</div>
+                <span class="opt-tag tag-danger">Insecure</span>
+              </div>
+              <div class="opt-desc">Allows Rapid Reset attacks to instantly saturate CPU cycles and file descriptor pools.</div>
+            </div>
+            <div class="opt-tile" data-val="2" onclick="selectOption('streams', 2)">
+              <div class="opt-header">
+                <div class="opt-name">Partial Concurrency Limit (500+ streams)</div>
+                <span class="opt-tag tag-warn">Partial</span>
+              </div>
+              <div class="opt-desc">Caps the maximum parallel streams but lacks active cancellation burst mitigation for RST frames.</div>
+            </div>
+            <div class="opt-tile" data-val="3" onclick="selectOption('streams', 3)">
+              <div class="opt-header">
+                <div class="opt-name">Strict Stream Limits with Cancellation Throttling</div>
+                <span class="opt-tag tag-safe">Hardened</span>
+              </div>
+              <div class="opt-desc">Caps concurrent streams to 100 per connection and throttles client IPs exceeding cancellation thresholds.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-card" data-stage="3">
+          <div class="stage-header">
+            <span class="stage-title">3. Linux Kernel TCP Network Stack (NoisyTCP)</span>
+            <span class="stage-number">STAGE 03</span>
+          </div>
+          <div class="options-grid" data-stage="kernel">
+            <div class="opt-tile selected level-danger" data-val="1" onclick="selectOption('kernel', 1)">
+              <div class="opt-header">
+                <div class="opt-name">Default Linux Kernel without NoisyTCP Mitigation</div>
+                <span class="opt-tag tag-danger">Insecure</span>
+              </div>
+              <div class="opt-desc">Vulnerable to TCP out-of-order queue exhaustion where crafted packets cause remote system crash.</div>
+            </div>
+            <div class="opt-tile" data-val="2" onclick="selectOption('kernel', 2)">
+              <div class="opt-header">
+                <div class="opt-name">Active SYN Cookies with Default Buffers</div>
+                <span class="opt-tag tag-warn">Partial</span>
+              </div>
+              <div class="opt-desc">Mitigates basic SYN floods but leaves TCP reordering queues susceptible to memory pressure.</div>
+            </div>
+            <div class="opt-tile" data-val="3" onclick="selectOption('kernel', 3)">
+              <div class="opt-header">
+                <div class="opt-name">Hardened Kernel Stack via sysctl.conf</div>
+                <span class="opt-tag tag-safe">Hardened</span>
+              </div>
+              <div class="opt-desc">Disables risky TCP timestamps, tunes socket buffers, and hardens out-of-order queue processing.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-card" data-stage="4">
+          <div class="stage-header">
+            <span class="stage-title">4. Information Disclosure & Server Headers</span>
+            <span class="stage-number">STAGE 04</span>
+          </div>
+          <div class="options-grid" data-stage="banners">
+            <div class="opt-tile selected level-danger" data-val="1" onclick="selectOption('banners', 1)">
+              <div class="opt-header">
+                <div class="opt-name">Full Informative Server Banners Enabled</div>
+                <span class="opt-tag tag-danger">Insecure</span>
+              </div>
+              <div class="opt-desc">Server and X-Powered-By headers leak exact versions of Apache, Nginx, Node.js, and backend modules.</div>
+            </div>
+            <div class="opt-tile" data-val="2" onclick="selectOption('banners', 2)">
+              <div class="opt-header">
+                <div class="opt-name">Partial Version Hiding</div>
+                <span class="opt-tag tag-warn">Partial</span>
+              </div>
+              <div class="opt-desc">Displays only the web server family without numeric versions, still revealing software foundation.</div>
+            </div>
+            <div class="opt-tile" data-val="3" onclick="selectOption('banners', 3)">
+              <div class="opt-header">
+                <div class="opt-name">Complete Banner Suppression and Token Masking</div>
+                <span class="opt-tag tag-safe">Hardened</span>
+              </div>
+              <div class="opt-desc">Server signature headers completely stripped at the edge or overwritten with generic tokens.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-card" data-stage="5">
+          <div class="stage-header">
+            <span class="stage-title">5. Edge Perimeter & Origin Direct Exposure</span>
+            <span class="stage-number">STAGE 05</span>
+          </div>
+          <div class="options-grid" data-stage="perimeter">
+            <div class="opt-tile selected level-danger" data-val="1" onclick="selectOption('perimeter', 1)">
+              <div class="opt-header">
+                <div class="opt-name">Direct Connection to Origin Server IP</div>
+                <span class="opt-tag tag-danger">Insecure</span>
+              </div>
+              <div class="opt-desc">No DDoS shield or edge reverse proxy; malicious volumetric traffic directly hits kernel sockets.</div>
+            </div>
+            <div class="opt-tile" data-val="2" onclick="selectOption('perimeter', 2)">
+              <div class="opt-header">
+                <div class="opt-name">Local Reverse Proxy on Same Host</div>
+                <span class="opt-tag tag-warn">Partial</span>
+              </div>
+              <div class="opt-desc">Isolates application runtimes internally, but physical interface still absorbs incoming attack volume.</div>
+            </div>
+            <div class="opt-tile" data-val="3" onclick="selectOption('perimeter', 3)">
+              <div class="opt-header">
+                <div class="opt-name">Cloudflare WAF Protection & Edge TLS Termination</div>
+                <span class="opt-tag tag-safe">Hardened</span>
+              </div>
+              <div class="opt-desc">Origin IP address completely hidden; NoisyTCP and Rapid Reset vectors neutralized globally at the edge.</div>
+            </div>
+          </div>
+        </div>
+
+    </section>
+
+    <section class="diagnostic-card">
+      <div class="diag-header">
+        <div class="diag-title">HTTP/2 & Kernel Resilience Diagnostic</div>
+      </div>
+
+      <div class="diag-score-wrap">
+        <div class="gauge-box">
+          <div class="gauge-circle" id="gauge-circle">25<span>SCORE</span></div>
+        </div>
+        <div class="posture-details">
+          <div class="posture-badge badge-vuln" id="posture-badge">VULNERABLE - CRITICAL CRASH RISK</div>
+          <div class="posture-summary" id="posture-summary">The server is highly vulnerable to remote crashes via Linux kernel NoisyTCP and massive Rapid Reset HTTP/2 floods.</div>
+        </div>
+      </div>
+
+      <div class="status-bar-container">
+          <div class="bar-col">
+            <div class="bar-seg seg-danger" id="seg-1"></div>
+            <div class="bar-label">Protocol</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-seg seg-danger" id="seg-2"></div>
+            <div class="bar-label">Streams</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-seg seg-danger" id="seg-3"></div>
+            <div class="bar-label">Kernel</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-seg seg-danger" id="seg-4"></div>
+            <div class="bar-label">Banners</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-seg seg-danger" id="seg-5"></div>
+            <div class="bar-label">Perimeter</div>
+          </div>
+
+      </div>
+
+      <div class="findings-box">
+        <div class="findings-header">
+          <span class="findings-title">Identified Architectural Findings</span>
+          <span class="findings-count" id="findings-count">5 Alerts</span>
+        </div>
+        <div class="findings-list" id="findings-list"></div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-header">
+          <div class="code-tabs">
+          <button type="button" class="code-tab active" data-tab="sysctl" onclick="switchCodeTab('sysctl')">sysctl.conf (Kernel)</button>
+          <button type="button" class="code-tab" data-tab="nginx" onclick="switchCodeTab('nginx')">nginx.conf (HTTP/2)</button>
+          <button type="button" class="code-tab" data-tab="apache" onclick="switchCodeTab('apache')">httpd.conf (Apache)</button>
+          <button type="button" class="code-tab" data-tab="bash" onclick="switchCodeTab('bash')">Bash Audit Script</button>
+
+          </div>
+          <button type="button" class="btn-copy" id="btn-copy" onclick="copyCode()">Copy Code</button>
+        </div>
+        <pre class="code-box" id="code-box"></pre>
+      </div>
+    </section>
+
+    <section class="aeo-section">
+      <div class="aeo-badge" id="aeo-badge">DEFENSIVE SECURITY STANDARD FOR WEB SERVERS & HTTP/2</div>
+      <h2 class="aeo-title">What Causes Remote Crashes and DoS Attacks on HTTP/2 and Linux Servers?</h2>
+      <div class="aeo-content">
+        <p>Remote crashes and denial-of-service conditions in Linux servers and HTTP/2 nodes occur primarily when attackers exploit architectural flaws in the TCP transport layer and application-layer stream multiplexing. In the NoisyTCP flaw present in the Linux kernel network subsystem, out-of-order TCP packets with manipulated control flags force unconstrained kernel memory allocation, crashing Nginx, Apache, and SSH instances without authentication.</p>
+        <p>Concurrently, at the HTTP/2 layer, Rapid Reset vulnerabilities (CVE-2023-44487) allow an attacker to send high-frequency bursts of requests immediately cancelled via RST_STREAM frames. Unhardened software such as Apache HTTP Server and Node.js runtimes rapidly exhaust available file descriptors, causing thread pool starvation and unhandled process termination.</p>
+        <p>Definitive hardening against these vectors requires kernel network tuning in /etc/sysctl.conf (mitigating TCP out-of-order queue saturation), server banner suppression, and edge TLS termination combined with managed Cloudflare WAF rules and Zero Trust concurrency inspection.</p>
+      </div>
+    </section>
+
+    <section class="geo-section">
+      <h2 class="geo-title">Technical Comparison Matrix: Vulnerable Web Server vs. TAVARDT Hardened Server</h2>
+      <div class="geo-grid">
+        <div class="geo-col vuln">
+          <div class="geo-col-title">Vulnerable Server (Critical Crash Risk)</div>
+          <ul class="geo-list">
+            <li><span class="cross">&#10006;</span> Linux kernel using default TCP parameters vulnerable to NoisyTCP out-of-order exhaustion.</li>
+            <li><span class="cross">&#10006;</span> HTTP/2 negotiation with unconstrained streams per connection (susceptible to Rapid Reset).</li>
+            <li><span class="cross">&#10006;</span> Verbose Server and X-Powered-By headers leaking precise Apache and runtime versions.</li>
+            <li><span class="cross">&#10006;</span> No active defenses against slow connection floods (Slowloris and HTTP/2 ping floods).</li>
+            <li><span class="cross">&#10006;</span> Direct traffic routing to origin IP without edge perimeter or managed WAF shield.</li>
+          </ul>
+        </div>
+        <div class="geo-col hardened">
+          <div class="geo-col-title">TAVARDT Hardened Server (Zero Trust)</div>
+          <ul class="geo-list">
+            <li><span class="check">&#10004;</span> Linux kernel hardened with net.ipv4.tcp_timestamps=0 and out-of-order buffer containment.</li>
+            <li><span class="check">&#10004;</span> Strict limit of 100 concurrent streams with RST frame throttling and penalty thresholds.</li>
+            <li><span class="check">&#10004;</span> Complete server signature suppression using server_tokens off and ServerTokens Prod.</li>
+            <li><span class="check">&#10004;</span> Automated protection against slow requests with calibrated application read timeouts.</li>
+            <li><span class="check">&#10004;</span> Global edge TLS termination on Cloudflare WAF with total origin IP concealment.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq-section">
+      <h2 class="faq-title">Frequently Asked Questions about HTTP/2 & Server Resilience</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)">
+            <span>What is the NoisyTCP vulnerability in the Linux kernel?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>It is an architectural vulnerability in the Linux network subsystem that affects how the kernel handles out-of-order TCP packets. By sending carefully crafted packet sequences, an attacker triggers excessive CPU and memory allocation in kernel queues, causing web and SSH servers to crash without establishing a full handshake.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)">
+            <span>How does the HTTP/2 Rapid Reset attack (CVE-2023-44487) crash servers?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>A client sends hundreds of thousands of HTTP/2 requests and immediately cancels each one with a RST_STREAM frame. Because the server begins allocating memory and processing before handling the cancellation, worker pools and file descriptors quickly become exhausted.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)">
+            <span>Why is suppressing Server headers critical for defense?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Attackers use automated internet-wide scanners to identify specific vulnerable software versions. Suppressing Server and X-Powered-By headers prevents your server from being flagged as an easy target for automated exploit campaigns.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)">
+            <span>How do Cloudflare and Zero Trust edge architectures mitigate these vectors?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>By terminating TLS connections at Cloudflare's global edge, volumetric floods, Rapid Reset bursts, and NoisyTCP packets are absorbed by edge nodes, preventing malicious traffic from ever reaching your origin server.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)">
+            <span>Does sysctl kernel hardening require a server reboot?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>No. The vast majority of network hardening directives in /etc/sysctl.conf take effect immediately upon executing 'sudo sysctl -p', providing instant protection with zero downtime.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="cta-card">
+      <h3>Need Professional Hardening for HTTP/2 and Linux Servers?</h3>
+      <p>TAVARDT infrastructure and cybersecurity engineers audit Linux kernels, isolate exposed network ports, and deploy edge perimeter WAF protection within 24 hours.</p>
+      <div class="cta-btns">
+        <a class="btn-wa" href="https://wa.me/5584987721775?text=Hello%20Sofia%2C%20I%20used%20the%20HTTP/2%20Resilience%20Checker%20and%20identified%20vulnerabilities.%20I%20would%20like%20technical%20engineering%20assistance%20for%20hardening." rel="noopener" target="_blank">Direct Chat with Sofia (WhatsApp)</a>
+        <a class="btn-corp" href="https://ag.tavardt.com/cybersecurity/" rel="noopener" target="_blank">View Cybersecurity Services</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="tavardt-footer">
+    <div class="tavardt-footer-inner">
+      <div class="tavardt-footer-col">
+        <div class="tavardt-footer-logo">TAVARDT<span class="tavardt-brand-dot">.</span></div>
+        <p class="tavardt-footer-mission">We transform invisible digital operations into recognized and defensible digital architectures.</p>
+      </div>
+      <div class="tavardt-footer-col">
+        <div class="tavardt-footer-heading">Regional Navigation</div>
+        <ul class="tavardt-footer-links">
+          <li><a href="https://ag.tavardt.com/" rel="noopener" target="_blank">Portal</a></li>
+          <li><a href="https://tools.tavardt.com/" rel="noopener" target="_blank">Tools</a></li>
+          <li><a href="https://ag.tavardt.com/contact/" rel="noopener" target="_blank">Contact</a></li>
+        </ul>
+      </div>
+      <div class="tavardt-footer-col">
+        <div class="tavardt-footer-heading">Governance & Compliance</div>
+        <p class="tavardt-footer-compliance-text">Defensive architecture and cybersecurity controls aligned with CIS Benchmarks, OWASP guidelines, and RFC 9113 transport standards.</p>
+      </div>
+    </div>
+    <div class="tavardt-footer-bottom">
+      <p>&copy; 2026 TAVARDT. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const state = {
+      protocol: 1,
+      streams: 1,
+      kernel: 1,
+      banners: 1,
+      perimeter: 1
+    };
+
+    let activeTab = 'sysctl';
+
+    const codeTemplates = {
+      sysctl: `# TAVARDT Linux Kernel Hardening
+# /etc/sysctl.conf -> sudo sysctl -p
+
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_timestamps = 0
+net.ipv4.tcp_sack = 1
+net.ipv4.tcp_dsack = 0
+net.ipv4.tcp_fack = 0
+net.ipv4.tcp_fin_timeout = 15
+net.ipv4.tcp_keepalive_time = 300
+net.ipv4.tcp_keepalive_probes = 5
+net.ipv4.tcp_keepalive_intvl = 15
+net.ipv4.tcp_rmem = 4096 87380 6291456
+net.ipv4.tcp_wmem = 4096 65536 6291456
+net.core.somaxconn = 4096`,
+
+      nginx: `# TAVARDT Nginx Hardening (HTTP/2 Rapid Reset Mitigation)
+server_tokens off;
+http2_max_concurrent_streams 100;
+http2_recv_buffer_size 256k;
+http2_max_field_size 16k;
+http2_max_header_size 32k;
+limit_req_zone $binary_remote_addr zone=http2_limit:10m rate=30r/s;
+limit_req zone=http2_limit burst=50 nodelay;
+client_body_timeout 10s;
+client_header_timeout 10s;
+keepalive_timeout 30s;
+send_timeout 10s;`,
+
+      apache: `# TAVARDT Apache HTTP/2 Hardening (httpd.conf)
+ServerTokens Prod
+ServerSignature Off
+
+<IfModule http2_module>
+    Protocols h2 http/1.1
+    H2MaxSessionStreams 100
+    H2MaxConcurrentStreams 100
+    H2StreamMaxMemSize 65536
+    H2WindowSize 65536
+    H2Direct on
+    H2Push off
+</IfModule>
+
+<IfModule reqtimeout_module>
+    RequestReadTimeout header=10-20,minrate=500 body=10,minrate=500
+</IfModule>`,
+
+      bash: `#!/usr/bin/env bash
+# TAVARDT Kernel NoisyTCP Audit Script
+# chmod +x check_kernel.sh && sudo ./check_kernel.sh
+
+echo "=================================================="
+echo "    TAVARDT Linux Kernel NoisyTCP Security Audit  "
+echo "=================================================="
+
+KERNEL_VER=$(uname -r)
+echo "[i] Kernel Version: $KERNEL_VER"
+
+check_param() {
+    local param=$1
+    local expected=$2
+    local current=$(sysctl -n $param 2>/dev/null)
+    if [ "$current" == "$expected" ]; then
+        echo "[OK] $param = $current (Compliant)"
+    else
+        echo "[ALERT] $param = $current (Recommended: $expected)"
+    fi
+}
+
+echo ""
+echo "=== Checking Network Parameters ==="
+check_param "net.ipv4.tcp_syncookies" "1"
+check_param "net.ipv4.tcp_fin_timeout" "15"
+check_param "net.ipv4.tcp_timestamps" "0"
+
+echo ""
+echo "Audit complete. For support: https://ag.tavardt.com/cybersecurity/"`
+    };
+
+    const I18N_ALERTS = {
+        crit: ["HTTP/2 Negotiation: Insecure cleartext h2c negotiation susceptible to remote exploits.", "Multiplexing: Unlimited streams without cancellation rate limiting (Rapid Reset risk).", "Linux Kernel: NoisyTCP vulnerability active in TCP out-of-order reordering queue.", "Exposure: Verbose banners leaking vulnerable versions of Apache, Nginx, or runtimes.", "Perimeter: Direct connection to origin IP without managed edge WAF shield."],
+        warn: ["Negotiation: Legacy HTTP/1.1 prone to Head-of-Line connection blocking.", "Multiplexing: Partial stream concurrency without RST frame burst mitigation.", "Linux Kernel: SYN cookies active but socket buffers uncalibrated against resource overload.", "Exposure: Partial version masking with server signature active.", "Perimeter: Local reverse proxy without global volumetric absorption shield."],
+        ok: "No architectural vulnerabilities detected. Server 100% compliant with Zero Trust standard.",
+        status_hard: "HARDENED - HOMOLOGATED ARCHITECTURE",
+        status_partial: "PARTIAL - ATTENTION REQUIRED",
+        status_vuln: "VULNERABLE - CRITICAL CRASH RISK",
+        summary_hard: "The server features kernel-level NoisyTCP mitigation, HTTP/2 stream throttling, and active edge perimeter WAF protection.",
+        summary_partial: "There are specific gaps in stream concurrency or network stack tuning exposing the server to performance degradation.",
+        summary_vuln: "The server is highly vulnerable to remote crashes via Linux kernel NoisyTCP and massive Rapid Reset HTTP/2 floods.",
+        alert_singular: "Alert",
+        alert_plural: "Alerts",
+        btn_copy: "Copy Code",
+        btn_copied: "Copied!"
+    };
+
+    function selectOption(stageKey, val) {
+      state[stageKey] = val;
+      const grid = document.querySelector(`.options-grid[data-stage="${stageKey}"]`);
+      if (!grid) return;
+      grid.querySelectorAll('.opt-tile').forEach(tile => {
+        tile.className = 'opt-tile';
+        if (parseInt(tile.getAttribute('data-val'), 10) === val) {
+          const levelClass = val === 3 ? 'level-safe' : (val === 2 ? 'level-warn' : 'level-danger');
+          tile.className = `opt-tile selected ${levelClass}`;
+        }
+      });
+      updateAssessment();
+    }
+
+    function loadPreset(preset) {
+      const isHard = preset === 'hard';
+      const val = isHard ? 3 : 1;
+      state.protocol = val;
+      state.streams = val;
+      state.kernel = val;
+      state.banners = val;
+      state.perimeter = val;
+
+      ['protocol', 'streams', 'kernel', 'banners', 'perimeter'].forEach(stage => {
+        selectOption(stage, val);
+      });
+
+      document.getElementById('preset-vuln').className = !isHard ? 'btn-preset active-preset' : 'btn-preset';
+      document.getElementById('preset-hard').className = isHard ? 'btn-preset active-preset' : 'btn-preset';
+    }
+
+    function updateAssessment() {
+      const values = [state.protocol, state.streams, state.kernel, state.banners, state.perimeter];
+      const sum = values.reduce((a, b) => a + b, 0);
+      const score = Math.round(((sum - 5) / 10) * 75 + 25);
+
+      const gauge = document.getElementById('gauge-circle');
+      gauge.innerHTML = score + '<span>SCORE</span>';
+
+      const badge = document.getElementById('posture-badge');
+      const summary = document.getElementById('posture-summary');
+      const findingsList = document.getElementById('findings-list');
+      const findingsCount = document.getElementById('findings-count');
+      findingsList.innerHTML = '';
+
+      const alerts = [];
+      if (state.protocol === 1) alerts.push({ text: I18N_ALERTS.crit[0], crit: true });
+      if (state.streams === 1) alerts.push({ text: I18N_ALERTS.crit[1], crit: true });
+      if (state.kernel === 1) alerts.push({ text: I18N_ALERTS.crit[2], crit: true });
+      if (state.banners === 1) alerts.push({ text: I18N_ALERTS.crit[3], crit: true });
+      if (state.perimeter === 1) alerts.push({ text: I18N_ALERTS.crit[4], crit: true });
+
+      if (state.protocol === 2) alerts.push({ text: I18N_ALERTS.warn[0], crit: false });
+      if (state.streams === 2) alerts.push({ text: I18N_ALERTS.warn[1], crit: false });
+      if (state.kernel === 2) alerts.push({ text: I18N_ALERTS.warn[2], crit: false });
+      if (state.banners === 2) alerts.push({ text: I18N_ALERTS.warn[3], crit: false });
+      if (state.perimeter === 2) alerts.push({ text: I18N_ALERTS.warn[4], crit: false });
+
+      if (score >= 90) {
+        gauge.style.borderColor = 'var(--success)';
+        badge.className = 'posture-badge badge-hardened';
+        badge.innerText = I18N_ALERTS.status_hard;
+        summary.innerText = I18N_ALERTS.summary_hard;
+      } else if (score >= 60) {
+        gauge.style.borderColor = 'var(--warning)';
+        badge.className = 'posture-badge badge-partial';
+        badge.innerText = I18N_ALERTS.status_partial;
+        summary.innerText = I18N_ALERTS.summary_partial;
+      } else {
+        gauge.style.borderColor = 'var(--danger)';
+        badge.className = 'posture-badge badge-vuln';
+        badge.innerText = I18N_ALERTS.status_vuln;
+        summary.innerText = I18N_ALERTS.summary_vuln;
+      }
+
+      values.forEach((v, idx) => {
+        const seg = document.getElementById('seg-' + (idx + 1));
+        seg.className = 'bar-seg ' + (v === 3 ? 'seg-safe' : (v === 2 ? 'seg-warn' : 'seg-danger'));
+      });
+
+      const countLabel = alerts.length === 1 ? I18N_ALERTS.alert_singular : I18N_ALERTS.alert_plural;
+      findingsCount.innerText = alerts.length + ' ' + countLabel;
+      findingsCount.style.color = alerts.length === 0 ? 'var(--success)' : (alerts.some(a => a.crit) ? 'var(--danger)' : 'var(--warning)');
+
+      if (alerts.length === 0) {
+        const okItem = document.createElement('div');
+        okItem.className = 'finding-item ok';
+        okItem.innerText = I18N_ALERTS.ok;
+        findingsList.appendChild(okItem);
+      } else {
+        alerts.forEach(a => {
+          const item = document.createElement('div');
+          item.className = 'finding-item ' + (a.crit ? 'crit' : 'warn');
+          const tag = a.crit ? '[CRITICAL] ' : '[ATTENTION] ';
+          item.innerText = tag + a.text;
+          findingsList.appendChild(item);
+        });
+      }
+    }
+
+    function switchCodeTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.code-tab').forEach(b => {
+        b.className = b.getAttribute('data-tab') === tab ? 'code-tab active' : 'code-tab';
+      });
+      renderCode();
+    }
+
+    function renderCode() {
+      const box = document.getElementById('code-box');
+      box.textContent = codeTemplates[activeTab];
+    }
+
+    function copyCode() {
+      const text = codeTemplates[activeTab];
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.innerText = I18N_ALERTS.btn_copied;
+        setTimeout(() => { btn.innerText = I18N_ALERTS.btn_copy; }, 2000);
+      }).catch(() => {});
+    }
+
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      item.classList.toggle('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCode();
+      updateAssessment();
+    });
+  </script>
+</body>
+</html>
