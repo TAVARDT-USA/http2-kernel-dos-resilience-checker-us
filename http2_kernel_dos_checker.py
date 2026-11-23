@@ -36,7 +36,7 @@ def audit_local_kernel() -> Dict[str, Any]:
     }
 
     if not results["is_linux"]:
-        results["warning"] = "Auditoria de kernel aplicavel nativamente em hosts Linux. Em outros sistemas operacionais, utilize a auditoria remota via rede."
+        results["warning"] = "Kernel audit natively applicable on Linux hosts. On other operating systems, use remote network audit."
         return results
 
     total_weight = sum(v["weight"] for v in RECOMMENDED_SYSCTL.values())
@@ -141,9 +141,9 @@ def audit_remote_host(host: str, port: int = 443, timeout: int = 5) -> Dict[str,
 
 def main():
     parser = argparse.ArgumentParser(
-        description="TAVARDT Auditor de Resiliencia HTTP/2 & NoisyTCP Linux Kernel"
+        description="TAVARDT HTTP/2 & NoisyTCP Linux Kernel Resilience Auditor"
     )
-    parser.add_argument("--host", help="Host remoto para auditoria de negociacao HTTP/2 e banners", default=None)
+    parser.add_argument("--host", help="Remote host for HTTP/2 negotiation and server banner audit", default=None)
     parser.add_argument("--port", help="Porta remota (padrao: 443)", type=int, default=443)
     parser.add_argument("--kernel", action="store_true", help="Run local Linux kernel network parameters audit")
     parser.add_argument("--json", action="store_true", help="Retornar saida exclusivamente em formato JSON")
@@ -168,14 +168,14 @@ def main():
         return
 
     print("================================================================================")
-    print("      TAVARDT - AUDITOR DE RESILIENCIA HTTP/2 & QUEDA DE KERNEL LINUX           ")
+    print("      TAVARDT - HTTP/2 & LINUX KERNEL DOS RESILIENCE CHECKER           ")
     print("================================================================================")
     print(f"Versao: {VERSION} | Jurisdicao: Brasil | Portal: https://ag.tavardt.com/br/")
     print("--------------------------------------------------------------------------------\n")
 
     if "kernel_audit" in results:
         ka = results["kernel_audit"]
-        print(f"[*] AUDITORIA DE KERNEL LINUX (NoisyTCP Mitigation) | Score: {ka['score']}/100")
+        print(f"[*] LINUX KERNEL AUDIT (NoisyTCP Mitigation) | Score: {ka['score']}/100")
         if not ka["is_linux"]:
             print(f"    [AVISO] {ka.get('warning')}")
         else:
@@ -186,7 +186,7 @@ def main():
 
     if "remote_audit" in results:
         ra = results["remote_audit"]
-        print(f"[*] AUDITORIA REMOTA DE PROTOCOLO: {ra['target']} | Score: {ra['score']}/100")
+        print(f"[*] REMOTE PROTOCOL AUDIT: {ra['target']} | Score: {ra['score']}/100")
         print(f"    HTTP/2 Suportado (ALPN): {'SIM' if ra['http2_supported'] else 'NAO'}")
         print(f"    Versao TLS: {ra['tls_version'] or 'Desconhecida'}")
         print(f"    Banner Server Exposto: {'SIM (' + ra['server_banner'] + ')' if ra['banner_leaked'] else 'NAO (Protegido)'}")
