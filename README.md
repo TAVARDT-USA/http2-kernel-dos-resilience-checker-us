@@ -1,10 +1,38 @@
 # HTTP/2 & Linux Kernel DoS Resilience Hardening Hub
 
-Corporate technical defensive engineering specification and infrastructure hardening blueprints for mitigating HTTP/2 Rapid Reset (CVE-2023-44487) and NoisyTCP resource saturation vectors, Linux kernel sysctl hardening, and deterministic local CLI verification.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-5b3cf5.svg)](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)
+[![Jurisdiction](https://img.shields.io/badge/Jurisdiction-USA-00C853.svg)](https://ag.tavardt.com/us/)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![RFC 7540](https://img.shields.io/badge/RFC-7540-blue.svg)](https://datatracker.ietf.org/doc/html/rfc7540)
+[![RFC 9113](https://img.shields.io/badge/RFC-9113-blue.svg)](https://datatracker.ietf.org/doc/html/rfc9113)
 
-## Repository Technical Scope
+**Corporate Technical Defensive Engineering Specification and Hardening Blueprints for HTTP/2 Rapid Reset (CVE-2023-44487) and Linux Kernel Networking Stack**
 
-This repository provides production-tested server hardening templates and deterministic CLI verification tooling:
+Developed and maintained by the Infrastructure Security Engineering Division of **[TAVARDT USA](https://ag.tavardt.com/us/)**.
+
+***
+
+## Official Portals
+
+* **Institutional Portal**: [https://ag.tavardt.com/us/](https://ag.tavardt.com/us/)
+* **Tools Center**: [https://tools.tavardt.com/us/](https://tools.tavardt.com/us/)
+* **Contact and Technical Support**: [https://ag.tavardt.com/us/contact/](https://ag.tavardt.com/us/contact/)
+
+***
+
+## Online Demonstration & Defensive Architecture Hub
+
+You can inspect the technical defensive specifications, architectural diagnostic tests, and mitigation blueprints directly in your browser:
+
+* **[Official Web Application on GitHub Pages](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)**
+* **[TAVARDT Tools Center](https://tools.tavardt.com/us/)**
+
+> [!NOTE]
+> **Technical Execution Scope:** This web hub provides defensive architecture specifications and hardening configuration blueprints. Active Linux kernel state inspection and network stack parameter audits require system privileges (root) and must be executed directly on the server host using the provided Python CLI tool (`http2_kernel_dos_checker.py`). Web pages running in browser sandboxes cannot audit host kernel parameters.
+
+***
+
+## Hardening Blueprints Included
 
 1. **sysctl-hardening.conf:** Optimized `/proc/sys/net/ipv4` parameters mitigating SYN floods, NoisyTCP timestamp attacks, and orphaned socket exhaustion.
 2. **nginx-http2-hardened.conf:** Hardened NGINX reverse proxy configuration enforcing strict stream concurrency limits (`http2_max_concurrent_streams 64`) and aggressive RST_STREAM rate limiting.
@@ -12,15 +40,14 @@ This repository provides production-tested server hardening templates and determ
 4. **docker-compose-hardened.yml:** Isolated container architecture applying resource limits (memory, CPU, ulimits) to edge web proxies.
 5. **http2_kernel_dos_checker.py:** Deterministic local CLI utility running with system privileges on the server host to directly audit `/proc/sys` parameters and verify RFC compliance.
 
-> [!NOTE]
-> Active Linux kernel state inspection and network stack parameter audits require system privileges and must be executed directly on the server host using the provided Python CLI tool. Web pages running in browser sandboxes cannot audit host kernel parameters.
+***
 
-## CLI Utility Usage
+## Deterministic CLI Utility Usage
 
-Run the deterministic audit script directly on the server host:
+Run the deterministic audit script directly on the Linux server host:
 
 ```bash
-# 1. Download audit script
+# 1. Download audit script from official repository
 curl -sO https://raw.githubusercontent.com/TAVARDT-USA/http2-kernel-dos-resilience-checker-us/main/http2_kernel_dos_checker.py
 
 # 2. Inspect local Linux kernel parameters
@@ -30,10 +57,12 @@ sudo python3 http2_kernel_dos_checker.py -kernel
 sudo python3 http2_kernel_dos_checker.py -kernel -json
 ```
 
-## Governance & Sovereignty
+***
+
+## Governance and Sovereignty
 
 * **Organization:** TAVARDT-USA
 * **Jurisdiction:** USA
-* **Standards Compliance:** RFC 7540, RFC 9113, CVE-2023-44487, Zero Trust Architecture
+* **Standards Compliance:** CIS Linux Benchmarks, RFC 7540, RFC 9113, CVE-2023-44487, and Zero Trust Architecture.
 
-Developed by the **TAVARDT USA** Cybersecurity & Infrastructure Engineering Division. All rights reserved.
+Developed by the Infrastructure & Cybersecurity Division of **[TAVARDT USA](https://ag.tavardt.com/us/)**. All rights reserved.
