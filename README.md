@@ -1,59 +1,39 @@
-# HTTP/2 & Linux Kernel DoS Resilience Auditor - TAVARDT USA
+# HTTP/2 & Linux Kernel DoS Resilience Hardening Hub
 
-> Resilience Audit against NoisyTCP, Rapid Reset (CVE-2023-44487), and Production Web Server Hardening
+Corporate technical defensive engineering specification and infrastructure hardening blueprints for mitigating HTTP/2 Rapid Reset (CVE-2023-44487) and NoisyTCP resource saturation vectors, Linux kernel sysctl hardening, and deterministic local CLI verification.
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Active-brightgreen)](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Security: CIS Linux](https://img.shields.io/badge/Security-CIS%20Linux%20%7C%20RFC%209113-red.svg)](https://www.cisecurity.org/)
+## Repository Technical Scope
 
-## Architecture Overview & HTTP/2 and Linux Kernel Resilience
+This repository provides production-tested server hardening templates and deterministic CLI verification tooling:
 
-The stability and operational resilience of enterprise web infrastructures depend directly on tight alignment between the Linux kernel TCP network stack and HTTP/2 multiplexing runtimes.
+1. **sysctl-hardening.conf:** Optimized `/proc/sys/net/ipv4` parameters mitigating SYN floods, NoisyTCP timestamp attacks, and orphaned socket exhaustion.
+2. **nginx-http2-hardened.conf:** Hardened NGINX reverse proxy configuration enforcing strict stream concurrency limits (`http2_max_concurrent_streams 64`) and aggressive RST_STREAM rate limiting.
+3. **nftables-dos-protection.conf:** Layer 4 packet filtering rules dropping anomalous TCP SYN and RST bursts prior to kernel socket allocation.
+4. **docker-compose-hardened.yml:** Isolated container architecture applying resource limits (memory, CPU, ulimits) to edge web proxies.
+5. **http2_kernel_dos_checker.py:** Deterministic local CLI utility running with system privileges on the server host to directly audit `/proc/sys` parameters and verify RFC compliance.
 
-Two critical threat vectors impact unhardened systems:
-1. **Linux Kernel NoisyTCP Flaw:** Crafted out-of-order TCP packet sequences with anomalous control flags force the kernel network subsystem into unconstrained buffer allocations, crashing Nginx, Apache, and SSH instances without authentication.
-2. **HTTP/2 Rapid Reset Abuse (CVE-2023-44487):** High-frequency request bursts immediately cancelled via `RST_STREAM` frames rapidly exhaust server file descriptor pools and worker threads.
+> [!NOTE]
+> Active Linux kernel state inspection and network stack parameter audits require system privileges and must be executed directly on the server host using the provided Python CLI tool. Web pages running in browser sandboxes cannot audit host kernel parameters.
 
-This repository provides both an interactive in-browser diagnostic tool and a zero-dependency Python CLI utility to audit local kernel settings and remote endpoints, generating battle-tested blueprints for `sysctl`, `nginx`, and `apache`.
+## CLI Utility Usage
 
-## Interactive Web Application
-
-Access the online tool and audit your server in real time:
-
-* [https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)
-
-The application simulates 5 security stages, calculates an objective resilience score (0 to 100), outputs architectural risk findings, and produces instant hardening configs.
-
-## Command-Line Scanner (Python)
-
-The repository includes `http2_kernel_dos_checker.py`, built exclusively with standard library Python (no external dependencies):
+Run the deterministic audit script directly on the server host:
 
 ```bash
-# Audit local Linux kernel parameters against NoisyTCP
-python3 http2_kernel_dos_checker.py --kernel
+# 1. Download audit script
+curl -sO https://raw.githubusercontent.com/TAVARDT-USA/http2-kernel-dos-resilience-checker-us/main/http2_kernel_dos_checker.py
 
-# Audit remote host (ALPN h2 negotiation, TLS version, and banner disclosure)
-python3 http2_kernel_dos_checker.py --host your-server.com --port 443
+# 2. Inspect local Linux kernel parameters
+sudo python3 http2_kernel_dos_checker.py -kernel
 
-# Output pure JSON for automated CI/CD security pipelines
-python3 http2_kernel_dos_checker.py --host your-server.com --json
+# 3. Output results in machine-readable JSON format
+sudo python3 http2_kernel_dos_checker.py -kernel -json
 ```
 
-## Architectural Controls & Defensive Mitigations
+## Governance & Sovereignty
 
-* **Linux Kernel (/etc/sysctl.conf):** Configuration of `net.ipv4.tcp_syncookies = 1`, disabling `net.ipv4.tcp_timestamps = 0` to mitigate NoisyTCP exploits, socket buffer calibration (`tcp_rmem`, `tcp_wmem`), and `somaxconn = 4096`.
-* **Nginx (nginx.conf):** Server banner suppression (`server_tokens off`), concurrent stream limiting (`http2_max_concurrent_streams 100`), and rate limiting zones (`limit_req_zone`) against `RST_STREAM` flooding.
-* **Apache HTTP Server (httpd.conf):** Complete signature masking (`ServerTokens Prod`, `ServerSignature Off`), concurrency restriction via `mod_http2` (`H2MaxSessionStreams 100`), and connection timeouts with `mod_reqtimeout`.
-* **Edge Perimeter:** Managed edge TLS termination with Cloudflare WAF and complete origin IP shielding.
+* **Organization:** TAVARDT-USA
+* **Jurisdiction:** USA
+* **Standards Compliance:** RFC 7540, RFC 9113, CVE-2023-44487, Zero Trust Architecture
 
-## Official Portals
-
-* **TAVARDT USA Portal:** [https://ag.tavardt.com/](https://ag.tavardt.com/)
-* **Cybersecurity Services:** [https://ag.tavardt.com/cybersecurity/](https://ag.tavardt.com/cybersecurity/)
-* **Security Tools Hub:** [https://tools.tavardt.com/](https://tools.tavardt.com/)
-* **GitHub Organization:** [https://github.com/TAVARDT-USA](https://github.com/TAVARDT-USA)
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+Developed by the **TAVARDT USA** Cybersecurity & Infrastructure Engineering Division. All rights reserved.
