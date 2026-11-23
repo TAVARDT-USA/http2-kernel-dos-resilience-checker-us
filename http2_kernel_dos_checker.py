@@ -2,7 +2,7 @@
 """
 TAVARDT HTTP/2 & Linux Kernel DoS Resilience Checker
 Auditor de Resiliencia contra NoisyTCP, Rapid Reset e Queda de Servidores Web
-TAVARDT Brasil - Ciberseguranca e Infraestrutura de Alta Confiabilidade
+TAVARDT USA - Cybersecurity and High Reliability Infrastructure
 """
 
 import sys
@@ -26,7 +26,7 @@ RECOMMENDED_SYSCTL = {
 }
 
 def audit_local_kernel() -> Dict[str, Any]:
-    """Audita os parametros de rede do kernel Linux local contra a falha NoisyTCP."""
+    """Audits local Linux kernel network parameters against NoisyTCP vulnerability."""
     results = {
         "platform": sys.platform,
         "is_linux": sys.platform.startswith("linux"),
@@ -65,9 +65,9 @@ def audit_local_kernel() -> Dict[str, Any]:
 
         results["checks"].append({
             "param": param,
-            "current": current_val or "indisponivel",
+            "current": current_val or "unavailable",
             "recommended": meta["expected"],
-            "status": "CONFORME" if conforming else "VULNERAVEL",
+            "status": "COMPLIANT" if conforming else "VULNERABLE",
             "desc": meta["desc"]
         })
 
@@ -107,7 +107,7 @@ def audit_remote_host(host: str, port: int = 443, timeout: int = 5) -> Dict[str,
     except Exception as e:
         report["connection_error"] = str(e)
         report["score"] = 30
-        report["findings"].append(f"Falha na conexao TLS com {host}:{port}: {e}")
+        report["findings"].append(f"TLS connection failure with {host}:{port}: {e}")
         return report
 
     # Checagem de cabeçalhos HTTP
@@ -145,7 +145,7 @@ def main():
     )
     parser.add_argument("--host", help="Host remoto para auditoria de negociacao HTTP/2 e banners", default=None)
     parser.add_argument("--port", help="Porta remota (padrao: 443)", type=int, default=443)
-    parser.add_argument("--kernel", action="store_true", help="Executar auditoria local dos parametros de rede do Linux")
+    parser.add_argument("--kernel", action="store_true", help="Run local Linux kernel network parameters audit")
     parser.add_argument("--json", action="store_true", help="Retornar saida exclusivamente em formato JSON")
 
     args = parser.parse_args()
@@ -153,7 +153,7 @@ def main():
     results = {
         "version": VERSION,
         "auditor": "TAVARDT Brasil",
-        "documentation": "https://ag.tavardt.com/br/ciberseguranca/",
+        "documentation": "https://ag.tavardt.com/us/cybersecurity/",
         "web_tool": "https://tavardt-brasil.github.io/http2-kernel-dos-resilience-checker-br/"
     }
 
@@ -180,7 +180,7 @@ def main():
             print(f"    [AVISO] {ka.get('warning')}")
         else:
             for c in ka["checks"]:
-                tag = "[OK]        " if c["status"] == "CONFORME" else "[VULNERAVEL]"
+                tag = "[OK]        " if c["status"] == "COMPLIANT" else "[VULNERABLE]"
                 print(f"    {tag} {c['param']}: atual={c['current']} | recomendado={c['recommended']}")
         print()
 
@@ -197,7 +197,7 @@ def main():
         print()
 
     print("Para suporte tecnico e blindagem perimetral:")
-    print("TAVARDT Brasil: https://ag.tavardt.com/br/ciberseguranca/")
+    print("TAVARDT USA: https://ag.tavardt.com/us/cybersecurity/")
 
 if __name__ == "__main__":
     main()
