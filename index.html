@@ -14,7 +14,6 @@
 <title>HTTP/2 &amp; Linux Kernel DoS Resilience Hardening Hub | TAVARDT USA</title>
 <meta content="Corporate technical defensive specification for mitigating HTTP/2 Rapid Reset (CVE-2023-44487), NoisyTCP saturation, Linux kernel sysctl hardening, hardened NGINX blueprints, and deterministic CLI auditing tools." name="description"/>
 <link href="./favicon.ico" rel="icon" type="image/x-icon"/>
-
 <link href="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/" rel="canonical"/>
 <link href="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/" hreflang="en-US" rel="alternate"/>
 <link href="https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/" hreflang="x-default" rel="alternate"/>
@@ -998,7 +997,7 @@
 <header class="tavardt-header">
 <div class="tavardt-header-inner">
 <a class="tavardt-brand" href="https://ag.tavardt.com/" rel="noopener" target="_blank">
-<span class="tavardt-logo-text">TAVARDT<span class="tavardt-brand-dot">.</span></span>
+<span class="tavardt-logo-text">TAVARDT</span>
 </a>
 <nav class="tavardt-nav">
 <a class="tavardt-nav-link" href="https://ag.tavardt.com/" rel="noopener" target="_blank">Portal</a>
@@ -1096,67 +1095,23 @@ python http2_kernel_dos_checker.py</div>
 </section>
 <section class="faq-section">
 <h2 class="faq-title">Perguntas Frequentes sobre Mitigação de DoS em HTTP/2 e Kernel Linux</h2>
-<div class="faq-list">
-<div class="faq-item">
-<button class="faq-btn" onclick="toggleFaq(this)" type="button">
-<span>Por que auditorias ativas de sobrecarga HTTP/2 e queda de kernel não devem ser executadas pelo navegador?</span>
-<span class="faq-icon">+</span>
-</button>
-<div class="faq-body">
-            Auditorias de exaustão de pilha TCP e kernel exigem sockets brutos (raw sockets) e inspeção do sistema de arquivos /proc/sys do host, capacidades indisponíveis na sandbox restrita do navegador web. Por isso, a TAVARDT disponibiliza blueprints validados de configuração e um script CLI determinístico em Python para execução local no servidor.
-          </div>
-</div>
-<div class="faq-item">
-<button class="faq-btn" onclick="toggleFaq(this)" type="button">
-<span>Como o ataque HTTP/2 Rapid Reset (CVE-2023-44487) atua sobre servidores web?</span>
-<span class="faq-icon">+</span>
-</button>
-<div class="faq-body">
-            O ataque explora o mecanismo de multiplexação do protocolo HTTP/2 enviando sucessivas requisições HEADERS imediatamente seguidas de quadros RST_STREAM. O servidor web aloca recursos para processar cada requisição antes de descartá-la, gerando sobrecarga massiva de CPU e memória sem que o limite de conexões concorrentes seja atingido.
-          </div>
-</div>
-<div class="faq-item">
-<button class="faq-btn" onclick="toggleFaq(this)" type="button">
-<span>Quais parâmetros do kernel Linux (sysctl) são fundamentais para mitigação de saturação TCP?</span>
-<span class="faq-icon">+</span>
-</button>
-<div class="faq-body">
-            Destacam-se net.ipv4.tcp_syncookies = 1 (proteção contra SYN flood), net.ipv4.tcp_max_syn_backlog = 8192 (fila de conexões pendentes), net.ipv4.tcp_fin_timeout = 15 (liberação rápida de sockets órfãos) e net.ipv4.tcp_tw_reuse = 1 (reaproveitamento seguro de sockets em TIME_WAIT).
-          </div>
-</div>
-<div class="faq-item">
-<button class="faq-btn" onclick="toggleFaq(this)" type="button">
-<span>Qual a diferença entre mitigar ataques DoS na camada de aplicação (L7) versus camada de rede (L4)?</span>
-<span class="faq-icon">+</span>
-</button>
-<div class="faq-body">
-            A camada L4 (firewall nftables) filtra pacotes SYN abusivos e conexões anômalas antes que cheguem ao espaço do usuário, consumindo mínima CPU. A camada L7 (NGINX/proxy) inspeciona fluxos HTTP/2, limitando requisições e RST_STREAMs. Uma arquitetura defensiva robusta exige a atuação coordenada de ambas as camadas.
-          </div>
-</div>
-<div class="faq-item">
-<button class="faq-btn" onclick="toggleFaq(this)" type="button">
-<span>Como implementar as diretivas de mitigação sem interromper o tráfego legítimo de usuários?</span>
-<span class="faq-icon">+</span>
-</button>
-<div class="faq-body">
-            Recomenda-se aplicar os parâmetros em ambiente de staging ou através de deploy canário, monitorando métricas de latência e contadores de descarte com nstat e dmesg. As diretivas NGINX devem manter margem suficiente (ex.: 64 a 128 streams concorrentes) para atender clientes legítimos com alta performance.
-          </div>
-</div>
-</div>
+<div class="faq-list"><div class="faq-item"><div class="faq-question">Por que auditorias ativas de sobrecarga HTTP/2 e queda de kernel não devem ser executadas pelo navegador?<span class="faq-toggle">+</span></div><div class="faq-answer">Auditorias de exaustão de pilha TCP e kernel exigem sockets brutos (raw sockets) e inspeção do sistema de arquivos /proc/sys do host, capacidades indisponíveis na sandbox restrita do navegador web. Por isso, a TAVARDT disponibiliza blueprints validados de configuração e um script CLI determinístico em Python para execução local no servidor.</div></div><div class="faq-item"><div class="faq-question">Como o ataque HTTP/2 Rapid Reset (CVE-2023-44487) atua sobre servidores web?<span class="faq-toggle">+</span></div><div class="faq-answer">O ataque explora o mecanismo de multiplexação do protocolo HTTP/2 enviando sucessivas requisições HEADERS imediatamente seguidas de quadros RST_STREAM. O servidor web aloca recursos para processar cada requisição antes de descartá-la, gerando sobrecarga massiva de CPU e memória sem que o limite de conexões concorrentes seja atingido.</div></div><div class="faq-item"><div class="faq-question">Quais parâmetros do kernel Linux (sysctl) são fundamentais para mitigação de saturação TCP?<span class="faq-toggle">+</span></div><div class="faq-answer">Destacam-se net.ipv4.tcp_syncookies = 1 (proteção contra SYN flood), net.ipv4.tcp_max_syn_backlog = 8192 (fila de conexões pendentes), net.ipv4.tcp_fin_timeout = 15 (liberação rápida de sockets órfãos) e net.ipv4.tcp_tw_reuse = 1 (reaproveitamento seguro de sockets em TIME_WAIT).</div></div><div class="faq-item"><div class="faq-question">Qual a diferença entre mitigar ataques DoS na camada de aplicação (L7) versus camada de rede (L4)?<span class="faq-toggle">+</span></div><div class="faq-answer">A camada L4 (firewall nftables) filtra pacotes SYN abusivos e conexões anômalas antes que cheguem ao espaço do usuário, consumindo mínima CPU. A camada L7 (NGINX/proxy) inspeciona fluxos HTTP/2, limitando requisições e RST_STREAMs. Uma arquitetura defensiva robusta exige a atuação coordenada de ambas as camadas.</div></div><div class="faq-item"><div class="faq-question">Como implementar as diretivas de mitigação sem interromper o tráfego legítimo de usuários?<span class="faq-toggle">+</span></div><div class="faq-answer">Recomenda-se aplicar os parâmetros em ambiente de staging ou através de deploy canário, monitorando métricas de latência e contadores de descarte com nstat e dmesg. As diretivas NGINX devem manter margem suficiente (ex.: 64 a 128 streams concorrentes) para atender clientes legítimos com alta performance.</div></div></div>
 </section>
+
 <div class="cta-card">
-<h3>Precisa de Blindagem de Infraestrutura contra Ataques DoS em HTTP/2 e Kernel?</h3>
-<p>A equipe de engenharia e cibersegurança da TAVARDT realiza auditorias aprofundadas em servidores corporativos, implementa filtros nftables de alto desempenho, ajusta parâmetros de kernel Linux e configura reverse proxies blindados em até 24 horas.</p>
+<h3>Need Infrastructure Hardening Against HTTP/2 Denial of Service?</h3>
+<p>The TAVARDT cybersecurity engineering division audits kernel sockets, mitigates rapid reset floods, configures Cloudflare Magic Transit, and deploys high-resilience reverse proxies within 24 hours.</p>
 <div class="cta-btns">
-<a class="btn-wa" href="https://wa.me/5584987721775?text=Ol%C3%A1%20Sofia%2C%20consultei%20o%20HTTP/2%20Kernel%20Hardening%20Hub%20da%20TAVARDT%20e%20gostaria%20de%20apoio%20t%C3%A9cnico%20para%20blindagem%20dos%20meus%20servidores." rel="noopener" target="_blank">Atendimento Direto com a Sofia (WhatsApp)</a>
-<a class="btn-corp" href="https://ag.tavardt.com/ciberseguranca/" rel="noopener" target="_blank">Ver Serviços de Cibersegurança</a>
+<a class="btn-wa" href="https://wa.me/5584987721775?text=Hello%20Sofia%2C%20I%20tested%20HTTP2%20DoS%20resilience%20at%20TAVARDT%20USA%20and%20would%20like%20enterprise%20hardening%20support." rel="noopener" target="_blank">Direct Support with Sofia (WhatsApp)</a>
+<a class="btn-corp" href="https://ag.tavardt.com/cybersecurity/" rel="noopener" target="_blank">Explore Cybersecurity Services</a>
 </div>
 </div>
+
 </main>
 <footer class="tavardt-footer">
 <div class="tavardt-footer-inner">
 <div class="tavardt-footer-col">
-<div class="tavardt-footer-logo">TAVARDT<span class="tavardt-brand-dot">.</span></div>
+<div class="tavardt-footer-logo">TAVARDT</div>
 <p class="tavardt-footer-mission">Transformamos negócios invisíveis em marcas reconhecidas e seguras no mercado digital.</p>
 </div>
 <div class="tavardt-footer-col">
