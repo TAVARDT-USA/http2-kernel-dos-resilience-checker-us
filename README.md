@@ -1,22 +1,21 @@
 # HTTP/2 & Linux Kernel DoS Resilience Hardening Hub
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-5b3cf5.svg)](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)
-[![Jurisdiction](https://img.shields.io/badge/Jurisdiction-USA-00C853.svg)](https://ag.tavardt.com/us/)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 [![RFC 7540](https://img.shields.io/badge/RFC-7540-blue.svg)](https://datatracker.ietf.org/doc/html/rfc7540)
 [![RFC 9113](https://img.shields.io/badge/RFC-9113-blue.svg)](https://datatracker.ietf.org/doc/html/rfc9113)
 
 **Corporate Technical Defensive Engineering Specification and Hardening Blueprints for HTTP/2 Rapid Reset (CVE-2023-44487) and Linux Kernel Networking Stack**
 
-Developed and maintained by the Infrastructure Security Engineering Division of **[TAVARDT USA](https://ag.tavardt.com/us/)**.
+Developed and maintained by the Infrastructure Security Engineering Division of **TAVARDT USA**.
 
 ***
 
 ## Official Portals
 
-* **Institutional Portal**: [https://ag.tavardt.com/us/](https://ag.tavardt.com/us/)
-* **Tools Center**: [https://tools.tavardt.com/us/](https://tools.tavardt.com/us/)
-* **Contact and Technical Support**: [https://ag.tavardt.com/us/contact/](https://ag.tavardt.com/us/contact/)
+* **Institutional Portal**: [Portal Institucional](https://ag.tavardt.com/us/)
+* **Tools Center**: [Central de Ferramentas](https://tools.tavardt.com/us/)
+* **Contact and Technical Support**: [Canal de Contato](https://ag.tavardt.com/us/contact/)
 
 ***
 
@@ -25,7 +24,7 @@ Developed and maintained by the Infrastructure Security Engineering Division of 
 You can inspect the technical defensive specifications, architectural diagnostic tests, and mitigation blueprints directly in your browser:
 
 * **[Official Web Application on GitHub Pages](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)**
-* **[TAVARDT Tools Center](https://tools.tavardt.com/us/)**
+* **TAVARDT Tools Center**
 
 > [!NOTE]
 > **Technical Execution Scope:** This web hub provides defensive architecture specifications and hardening configuration blueprints. Active Linux kernel state inspection and network stack parameter audits require system privileges (root) and must be executed directly on the server host using the provided Python CLI tool (`http2_kernel_dos_checker.py`). Web pages running in browser sandboxes cannot audit host kernel parameters.
@@ -65,4 +64,4 @@ sudo python3 http2_kernel_dos_checker.py -kernel -json
 * **Jurisdiction:** USA
 * **Standards Compliance:** CIS Linux Benchmarks, RFC 7540, RFC 9113, CVE-2023-44487, and Zero Trust Architecture.
 
-Developed by the Infrastructure & Cybersecurity Division of **[TAVARDT USA](https://ag.tavardt.com/us/)**. All rights reserved.
+Developed by the Infrastructure & Cybersecurity Division of **TAVARDT USA**. All rights reserved.
