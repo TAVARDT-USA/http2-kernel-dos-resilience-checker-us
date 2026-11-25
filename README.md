@@ -8,16 +8,13 @@
 
 **Corporate Technical Defensive Engineering Specification and Hardening Blueprints for HTTP/2 Rapid Reset (CVE-2023-44487) and Linux Kernel Networking Stack**
 
-Developed and maintained by the Infrastructure Security Engineering Division of **TAVARDT**.
-
 ***
 
-## Online Demonstration & Defensive Architecture Hub
+## Online Demonstration
 
 You can inspect the technical defensive specifications, architectural diagnostic tests, and mitigation blueprints directly in your browser:
 
 * **[Official Web Application on GitHub Pages](https://tavardt-usa.github.io/http2-kernel-dos-resilience-checker-us/)**
-* **TAVARDT Tools Center**
 
 > [!NOTE]
 > **Technical Execution Scope:** This web hub provides defensive architecture specifications and hardening configuration blueprints. Active Linux kernel state inspection and network stack parameter audits require system privileges (root) and must be executed directly on the server host using the provided Python CLI tool (`http2_kernel_dos_checker.py`). Web pages running in browser sandboxes cannot audit host kernel parameters.
@@ -60,7 +57,7 @@ sudo python3 http2_kernel_dos_checker.py -kernel -json
 ***
 
 ### License
-Released under the MIT License. See [LICENSE](LICENSE) for full details.
+Released under the MIT License.
 
 ***
 
