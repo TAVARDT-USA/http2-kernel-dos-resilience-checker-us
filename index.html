@@ -1095,7 +1095,53 @@ python http2_kernel_dos_checker.py</div>
 </section>
 <section class="faq-section">
 <h2 class="faq-title">Frequently Asked Questions on HTTP/2 DoS Mitigation &amp; Linux Kernel Hardening</h2>
-<div class="faq-list"><div class="faq-item"><div class="faq-question">Why should active HTTP/2 stress audits and kernel testing not be run via browser?<span class="faq-toggle">+</span></div><div class="faq-answer">Auditing TCP stack and kernel exhaustion requires raw socket operations and direct inspection of the host /proc/sys filesystem, capabilities unavailable within browser sandboxes. TAVARDT provides validated configuration blueprints and a deterministic Python CLI utility for secure local execution.</div></div><div class="faq-item"><div class="faq-question">How does the HTTP/2 Rapid Reset attack (CVE-2023-44487) affect web servers?<span class="faq-toggle">+</span></div><div class="faq-answer">The attack exploits HTTP/2 stream multiplexing by dispatching continuous HEADERS requests immediately followed by RST_STREAM frames. The web server allocates resources to initialise each request prior to discarding it, inducing severe CPU and memory exhaustion without hitting connection limits.</div></div><div class="faq-item"><div class="faq-question">Which Linux kernel sysctl parameters are critical for mitigating TCP saturation?<span class="faq-toggle">+</span></div><div class="faq-answer">Key parameters include net.ipv4.tcp_syncookies = 1 (SYN flood defense), net.ipv4.tcp_max_syn_backlog = 8192 (pending connection queue expansion), net.ipv4.tcp_fin_timeout = 15 (rapid orphan socket release), and net.ipv4.tcp_tw_reuse = 1 (safe TIME_WAIT recycling).</div></div><div class="faq-item"><div class="faq-question">What is the difference between mitigating DoS attacks at Layer 7 vs Layer 4?<span class="faq-toggle">+</span></div><div class="faq-answer">Layer 4 filtering (nftables firewall) drops abusive SYN packets and connection anomalies before user-space processing with minimal CPU overhead. Layer 7 mitigation (NGINX/reverse proxy) governs HTTP/2 streams and RST_STREAM rates. A robust defensive architecture requires both layers operating in unison.</div></div><div class="faq-item"><div class="faq-question">How can mitigation directives be deployed without disrupting legitimate user traffic?<span class="faq-toggle">+</span></div><div class="faq-answer">Deploy directives in staging environments or via canary rollouts while monitoring latency and packet drop counters with nstat and dmesg. Ensure NGINX directives maintain adequate headroom (such as 64 to 128 concurrent streams) to serve legitimate traffic seamlessly.</div></div></div>
+<div class="faq-list">
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>Why should active HTTP/2 stress audits and kernel testing not be run via browser?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+Auditing TCP stack and kernel exhaustion requires raw socket operations and direct inspection of the host /proc/sys filesystem, capabilities unavailable within browser sandboxes. TAVARDT provides validated configuration blueprints and a deterministic Python CLI utility for secure local execution.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>How does the HTTP/2 Rapid Reset attack (CVE-2023-44487) affect web servers?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+The attack exploits HTTP/2 stream multiplexing by dispatching continuous HEADERS requests immediately followed by RST_STREAM frames. The web server allocates resources to initialise each request prior to discarding it, inducing severe CPU and memory exhaustion without hitting connection limits.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>Which Linux kernel sysctl parameters are critical for mitigating TCP saturation?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+Key parameters include net.ipv4.tcp_syncookies = 1 (SYN flood defense), net.ipv4.tcp_max_syn_backlog = 8192 (pending connection queue expansion), net.ipv4.tcp_fin_timeout = 15 (rapid orphan socket release), and net.ipv4.tcp_tw_reuse = 1 (safe TIME_WAIT recycling).
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>What is the difference between mitigating DoS attacks at Layer 7 vs Layer 4?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+Layer 4 filtering (nftables firewall) drops abusive SYN packets and connection anomalies before user-space processing with minimal CPU overhead. Layer 7 mitigation (NGINX/reverse proxy) governs HTTP/2 streams and RST_STREAM rates. A robust defensive architecture requires both layers operating in unison.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>How can mitigation directives be deployed without disrupting legitimate user traffic?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+Deploy directives in staging environments or via canary rollouts while monitoring latency and packet drop counters with nstat and dmesg. Ensure NGINX directives maintain adequate headroom (such as 64 to 128 concurrent streams) to serve legitimate traffic seamlessly.
+</div>
+</div>
+</div>
 </section>
 
 <div class="cta-card">
